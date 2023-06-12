@@ -28,7 +28,12 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       - name: Build with Maven
-        run: mvn clean package       
+      - run: |
+        mvn clean package
+        ls -lrth
+        pwd
+        cd target
+        ls -lrth       
 
   create-image-push-to-dockerhub:
     needs: build
