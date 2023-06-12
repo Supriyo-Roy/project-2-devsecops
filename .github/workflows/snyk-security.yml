@@ -1,7 +1,7 @@
 name: Example workflow for Maven using Snyk
 on: push
 jobs:
-  security:
+  snyk-scan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -17,7 +17,7 @@ jobs:
         with:
           sarif_file: snyk.sarif
 
-  create-image-push-to-dockerhub:
+  build-image-publish-to-dockerhub:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -44,3 +44,16 @@ jobs:
         
     - name: Docker Push
       run: docker push supriyohub/devsecops:latest
+
+  sonar-Cloud-Scan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        # Disabling shallow clone is recommended for improving relevancy of reporting
+        fetch-depth: 0
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
