@@ -18,7 +18,7 @@ jobs:
           sarif_file: snyk.sarif
 
   build-image-publish-to-dockerhub:
-    needs: build
+    needs: sonar-analysis
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -46,7 +46,7 @@ jobs:
     - name: Docker Push
       run: docker push supriyohub/devsecops:latest
 
-  build:
+  sonar-analysis:
         needs: snyk-scan
         name: Build and analyze
         runs-on: ubuntu-latest
