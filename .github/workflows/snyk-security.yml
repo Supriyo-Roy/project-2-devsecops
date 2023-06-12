@@ -40,7 +40,7 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag supriyohub/project-2-devsecops:$(date +%s)
+      run: docker build . --file Dockerfile --tag supriyohub/devsecops:latest
         
     - name: Docker Push
-      run: docker push supriyohub/project-2-devsecops
+      run: docker push supriyohub/devsecops:latest
