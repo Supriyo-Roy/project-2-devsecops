@@ -18,6 +18,7 @@ jobs:
           sarif_file: snyk.sarif
 
   build-image-publish-to-dockerhub:
+    needs: build
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
