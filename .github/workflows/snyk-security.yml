@@ -54,6 +54,8 @@ jobs:
     - run: |
         pwd
         ls -lrth
+        cd target
+        ls -lrth
 
    
     -  name: Logging in Dockerhub
