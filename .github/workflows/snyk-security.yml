@@ -78,18 +78,18 @@ jobs:
             run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=Supriyo-Roy_project-2-devsecops
             
   zap_scan:
-                runs-on: ubuntu-latest
-                name: Scan the webapplication
-                steps:
-                  - name: Checkout
-                    uses: actions/checkout@v3
-                    with:
-                      ref: main
-                  - name: ZAP Scan
-                    uses: zaproxy/action-full-scan@v0.4.0
-                    with:
-                      token: ${{ secrets.GIT_TOKEN }}
-                      docker_name: 'owasp/zap2docker-stable'
-                      target: 'https://www.zaproxy.org/'
-                      rules_file_name: '.zap/rules.tsv'
-                      cmd_options: '-a'
+    runs-on: ubuntu-latest
+    name: Scan the webapplication
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: main
+      - name: ZAP Scan
+        uses: zaproxy/action-baseline@v0.7.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          docker_name: 'owasp/zap2docker-stable'
+          target: 'https://www.zaproxy.org'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a'
