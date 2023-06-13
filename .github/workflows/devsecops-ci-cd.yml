@@ -1,0 +1,83 @@
+name: Complete CI-CD pipeline with SCA,SAST and DAST
+on: push
+jobs:
+ sast-scan:
+   runs-on: ubuntu-latest
+   name: Running SAST scan on the source code with SonarCloud 
+   steps:
+   - uses: actions/checkout@v2
+   - name: Set up JDK 11
+     uses: actions/setup-java@v2
+     with:
+       java-version: '11'
+       distribution: 'temurin'
+       cache: maven
+   - name: Build with Maven cloud
+     run:  mvn -B verify sonar:sonar -Dsonar.projectKey=Supriyo-Roy_project-2-devsecops -Dsonar.organization=supriyo-roy -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN
+     env:
+       GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+ sca-scan:
+   needs: sast-scan
+   runs-on: ubuntu-latest
+   name: Running SCA scan on the source code with SNYK
+   steps:
+      - uses: actions/checkout@master
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/maven@master
+        continue-on-error: true # To make sure that SARIF upload gets called
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --sarif-file-output=snyk.sarif
+      - name: Upload result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+         sarif_file: snyk.sarif   
+         
+ build-image-publish-to-dockerhub:
+      needs: sca-scan
+      runs-on: ubuntu-latest
+      name: Create a Docker image amd push to DockerHub
+      steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+            java-version: '11'
+            distribution: 'temurin'
+            cache: maven
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml      
+      -  name: Logging in Dockerhub
+         uses: docker/login-action@v2
+         with:
+            username: ${{ secrets.DOCKERHUB_USERNAME }}
+            password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag supriyohub/devsecops:latest
+            
+      - name: Docker Push
+        run: docker push supriyohub/devsecops:latest
+
+ zap_scan:
+   needs: build-image-publish-to-dockerhub
+   runs-on: ubuntu-latest
+   name: Scan the webapplication
+   steps:
+   - name: Checkout
+     uses: actions/checkout@v2
+     with:
+         ref: main
+   - name: ZAP Scan
+     uses: zaproxy/action-baseline@v0.7.0
+     with:
+         token: ${{ secrets.GIT_TOKEN }}
+         docker_name: 'owasp/zap2docker-stable'
+         target: 'https://www.zaproxy.org'  #replace with your load balancer url
+         rules_file_name: '.zap/rules.tsv'
+         cmd_options: '-a'
