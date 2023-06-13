@@ -77,7 +77,7 @@ jobs:
               SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
             run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=Supriyo-Roy_project-2-devsecops
             
-      zap_scan:
+  zap_scan:
                 runs-on: ubuntu-latest
                 name: Scan the webapplication
                 steps:
